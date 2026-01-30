@@ -7,7 +7,7 @@ export async function savingsProductsApi() {
     return response;
   } catch (e) {
     if (isHttpError(e)) {
-      console.log(e.message);
+      throw new Error(e.message);
     }
   }
 }

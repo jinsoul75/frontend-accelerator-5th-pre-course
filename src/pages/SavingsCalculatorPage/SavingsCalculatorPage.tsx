@@ -14,6 +14,7 @@ import {
 import { isProductMatchingInput } from './utils/savingsProductFilters';
 import { getTopProductsByRate } from './utils/productSorting';
 import { useSavingsProducts } from './hooks/useSavingsProducts';
+import { SavingsProductList } from './components/SavingsProductList';
 
 export function SavingsCalculatorPage() {
   const [savingsInput, setSavingsInput] = useState({
@@ -25,6 +26,15 @@ export function SavingsCalculatorPage() {
   const [selectedSavingsProduct, setSelectedSavingsProduct] = useState<SavingsProduct | null>(null);
 
   const { data: savingsProducts = [], isLoading, isError } = useSavingsProducts();
+
+  // formatCurrency, extractNumbers 같은 유틸함수들은 how다. 드러낼 필요가 있을까?
+  // 그런데 저 how들을 숨기고 컴포넌트를 만든다면 똑같은 props를 받고 그대로 쓰는 한번 더 래핑한 컴포넌트가 되지 않을까?
+  // 그럼에도 불구하고 AmountField처럼 금액 단위를 포매팅하는 how를 숨긴 직관적인 컴포넌트틑 만드는것과
+  // 한 번 추상화된(TextField) 컴포넌트를 그대로 사용하는것에 대한 트레이드 오프는 무엇일까?
+  // 결론적으로 나는 이 컴포넌트가 현재 2곳에서 쓰이고 리팩토링 비용을 쓸 만한 컴포넌트인지 의문이 들기 때문에 이대로 사용하기로 했다.
+  // 하지만 formatCurrency, extractNumbers 같은 유틸함수가 드러나는것이 덜컥거린다.
+  // 추상화를 한다면 AmountField로 할 것. 왜냐하면 이 컴포넌트의 본질을 생각했을 때 포매팅을한 금액을 보여주기 떄문에(일반적인 숫자들을 콤마를 찍는 .. 가? 찍겠다.
+  // 그러면 NumberField가 좋겠다.
 
   return (
     <>
@@ -71,7 +81,12 @@ export function SavingsCalculatorPage() {
           계산 결과
         </Tab.Item>
       </Tab>
-
+      {/*
+      그럼 NumberField와 같은 시각으로 봤을 때 filter도 how일까?
+      filter가 드러나지 않으려면 컴포넌트화를 해야하는데
+      각각의 컴포넌트에 filter로직이 다르다면 결국 how도 드러나는거 아닌가?
+      필터마다 다른이름의 컴포넌트...........?
+      */}
       {savingsProductTab === 'products' && (
         <>
           {isLoading ? (
@@ -79,9 +94,9 @@ export function SavingsCalculatorPage() {
           ) : isError ? (
             <ListRow contents={<ListRow.Texts type="1RowTypeA" top="상품 정보를 불러오지 못했습니다." />} />
           ) : (
-            savingsProducts
-              .filter(product => isProductMatchingInput(product, savingsInput))
-              .map(product => {
+            <SavingsProductList
+              items={savingsProducts.filter(product => isProductMatchingInput(product, savingsInput))}
+              renderItem={product => {
                 const isSelected = selectedSavingsProduct?.id === product.id;
                 return (
                   <SavingsProductItem
@@ -91,7 +106,8 @@ export function SavingsCalculatorPage() {
                     isSelected={isSelected}
                   />
                 );
-              })
+              }}
+            />
           )}
         </>
       )}
@@ -142,20 +158,16 @@ export function SavingsCalculatorPage() {
           ) : isError ? (
             <ListRow contents={<ListRow.Texts type="1RowTypeA" top="추천 상품을 불러오지 못했습니다." />} />
           ) : (
-            getTopProductsByRate(
-              savingsProducts.filter(product => isProductMatchingInput(product, savingsInput)),
-              2
-            ).map(product => {
-              const isSelected = selectedSavingsProduct?.id === product.id;
-              return (
-                <SavingsProductItem
-                  key={product.id}
-                  product={product}
-                  onClick={() => setSelectedSavingsProduct(isSelected ? null : product)}
-                  isSelected={isSelected}
-                />
-              );
-            })
+            <SavingsProductList
+              items={getTopProductsByRate(
+                savingsProducts.filter(product => isProductMatchingInput(product, savingsInput)),
+                2
+              )}
+              renderItem={product => {
+                const isSelected = selectedSavingsProduct?.id === product.id;
+                return <SavingsProductItem key={product.id} product={product} isSelected={isSelected} />;
+              }}
+            />
           )}
 
           <Spacing size={40} />

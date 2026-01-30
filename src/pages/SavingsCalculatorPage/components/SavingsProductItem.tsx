@@ -5,12 +5,12 @@ import { formatCurrency } from '../lib/formatCurrency';
 
 export const SavingsProductItem = ({
   product,
-  onClick,
   isSelected,
+  onClick,
 }: {
   product: SavingsProduct;
-  onClick: () => void;
   isSelected: boolean;
+  onClick?: () => void;
 }) => {
   return (
     <ListRow
