@@ -21,10 +21,11 @@ import {
   calculateExpectedAmount,
   calculateRecommendedMonthlyAmount,
 } from './utils/savingsCalculations';
-import { isProductMatchingInput } from './utils/savingsProductFilters';
-import { getTopProductsByRate } from './utils/productSorting';
+
 import { useSavingsProducts } from './hooks/useSavingsProducts';
 import { SavingsProductList } from './components/SavingsProductList';
+import { getRecommendedProducts } from './utils/getRecommendedProducts';
+import { getMatchingProducts } from './utils/getMatchingProducts';
 
 export function SavingsCalculatorPage() {
   const [savingsInput, setSavingsInput] = useState({
@@ -105,7 +106,7 @@ export function SavingsCalculatorPage() {
             <ListRow contents={<ListRow.Texts type="1RowTypeA" top="상품 정보를 불러오지 못했습니다." />} />
           ) : (
             <SavingsProductList
-              items={savingsProducts.filter(product => isProductMatchingInput(product, savingsInput))}
+              items={getMatchingProducts(savingsProducts, savingsInput)}
               renderItem={product => {
                 const isSelected = selectedSavingsProduct?.id === product.id;
                 return (
@@ -164,9 +165,10 @@ export function SavingsCalculatorPage() {
           <Spacing size={12} />
 
           {/*
-            UI에서 봤을 때 가장 상위 2개의 상품을 노출하라는 것을 알 수 가 없음.
+            UI에서 봤을 때 가장 상위 2개의 상품을 노출하라는 요구사항을 알 수가 없음.
             결국 기획서를 봐야하는 부분인데
             코드단에서 그 의도를 잘 전달하려면?
+            고객의 언어로 읽히는가? "추천 상품목록"이라고 했을 때 잘 읽히나?
           */}
           {isLoading ? (
             <ListRow contents={<ListRow.Texts type="1RowTypeA" top="불러오는 중..." />} />
@@ -174,10 +176,7 @@ export function SavingsCalculatorPage() {
             <ListRow contents={<ListRow.Texts type="1RowTypeA" top="추천 상품을 불러오지 못했습니다." />} />
           ) : (
             <SavingsProductList
-              items={getTopProductsByRate(
-                savingsProducts.filter(product => isProductMatchingInput(product, savingsInput)),
-                2
-              )}
+              items={getRecommendedProducts(savingsProducts, savingsInput)}
               renderItem={product => {
                 const isSelected = selectedSavingsProduct?.id === product.id;
                 return (
