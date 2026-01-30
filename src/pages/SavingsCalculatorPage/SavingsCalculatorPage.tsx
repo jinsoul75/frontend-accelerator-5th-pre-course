@@ -1,4 +1,14 @@
-import { Border, ListHeader, ListRow, NavigationBar, SelectBottomSheet, Spacing, Tab, TextField } from 'tosslib';
+import {
+  Assets,
+  Border,
+  ListHeader,
+  ListRow,
+  NavigationBar,
+  SelectBottomSheet,
+  Spacing,
+  Tab,
+  TextField,
+} from 'tosslib';
 import { SavingsProduct } from './types/types';
 import { useState } from 'react';
 
@@ -99,11 +109,11 @@ export function SavingsCalculatorPage() {
               renderItem={product => {
                 const isSelected = selectedSavingsProduct?.id === product.id;
                 return (
-                  <SavingsProductItem
+                  <ListRow
                     key={product.id}
-                    product={product}
+                    right={isSelected ? <Assets.Icon name="icon-check-circle-green" /> : null}
+                    contents={<SavingsProductItem product={product} />}
                     onClick={() => setSelectedSavingsProduct(isSelected ? null : product)}
-                    isSelected={isSelected}
                   />
                 );
               }}
@@ -153,6 +163,11 @@ export function SavingsCalculatorPage() {
           <ListHeader title={<ListHeader.TitleParagraph fontWeight="bold">추천 상품 목록</ListHeader.TitleParagraph>} />
           <Spacing size={12} />
 
+          {/*
+            UI에서 봤을 때 가장 상위 2개의 상품을 노출하라는 것을 알 수 가 없음.
+            결국 기획서를 봐야하는 부분인데
+            코드단에서 그 의도를 잘 전달하려면?
+          */}
           {isLoading ? (
             <ListRow contents={<ListRow.Texts type="1RowTypeA" top="불러오는 중..." />} />
           ) : isError ? (
@@ -165,12 +180,16 @@ export function SavingsCalculatorPage() {
               )}
               renderItem={product => {
                 const isSelected = selectedSavingsProduct?.id === product.id;
-                return <SavingsProductItem key={product.id} product={product} isSelected={isSelected} />;
+                return (
+                  <ListRow
+                    key={product.id}
+                    right={isSelected ? <Assets.Icon name="icon-check-circle-green" /> : null}
+                    contents={<SavingsProductItem product={product} />}
+                  />
+                );
               }}
             />
           )}
-
-          <Spacing size={40} />
         </>
       )}
     </>
